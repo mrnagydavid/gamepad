@@ -1,0 +1,61 @@
+.btn {
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  padding: 0.75em 1.5em;
+  border: 3px solid;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: #c73650;
+  box-shadow: 0 4px 0 #9e2a40;
+}
+
+.primary:active {
+  box-shadow: 0 1px 0 #9e2a40;
+  transform: translateY(3px) scale(0.96);
+}
+
+.secondary {
+  background: var(--color-secondary);
+  color: var(--color-text);
+  border-color: #0a2648;
+  box-shadow: 0 4px 0 #071d38;
+}
+
+.secondary:active {
+  box-shadow: 0 1px 0 #071d38;
+  transform: translateY(3px) scale(0.96);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--color-surface);
+  border: 3px solid var(--color-secondary);
+  padding: 2rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}

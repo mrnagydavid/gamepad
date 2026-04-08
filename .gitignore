@@ -1,0 +1,7 @@
+.claude
+spec.md
+node_modules
+dist
+dev-dist
+*.local
+.pnpm-store
