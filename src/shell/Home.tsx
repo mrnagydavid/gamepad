@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'preact/hooks';
-import { GAMES } from '../games/registry';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { GAMES, type GameMeta } from '../games/registry';
 import { getHighScore } from '../shared/storage/helpers';
 import { Button } from '../shared/ui/Button';
 import s from './home.module.css';
@@ -53,12 +53,13 @@ export function Home({ onLaunch }: HomeProps) {
             key={game.id}
             class={s.card}
             style={{ borderColor: game.color }}
+            onClick={() => onLaunch(game.id)}
           >
+            {game.thumbnail && <Thumbnail draw={game.thumbnail} />}
             <span class={s.cardTitle}>{game.title}</span>
             {scores[game.id] ? (
               <span class={s.cardScore}>Best: {scores[game.id]}</span>
             ) : null}
-            <Button onClick={() => onLaunch(game.id)}>Play</Button>
           </div>
         ))}
       </div>
@@ -71,5 +72,31 @@ export function Home({ onLaunch }: HomeProps) {
         </div>
       )}
     </div>
+  );
+}
+
+const THUMB_W = 140;
+const THUMB_H = 90;
+
+function Thumbnail({ draw }: { draw: GameMeta['thumbnail'] }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || !draw) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = THUMB_W * dpr;
+    canvas.height = THUMB_H * dpr;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(dpr, dpr);
+    draw(ctx, THUMB_W, THUMB_H);
+  }, [draw]);
+
+  return (
+    <canvas
+      ref={ref}
+      class={s.thumb}
+      style={{ width: `${THUMB_W}px`, height: `${THUMB_H}px` }}
+    />
   );
 }

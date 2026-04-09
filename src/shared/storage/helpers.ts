@@ -18,6 +18,15 @@ export async function getHighScore(game: string): Promise<number> {
   return top[0]?.score ?? 0;
 }
 
+/** Get the lowest score (best time). Returns 0 if no scores exist. */
+export async function getBestTime(game: string): Promise<number> {
+  const all = await db.scores
+    .where('game')
+    .equals(game)
+    .sortBy('score');
+  return all[0]?.score ?? 0;
+}
+
 export async function saveState<T>(game: string, payload: T): Promise<void> {
   await db.state.put({ game, payload });
 }
