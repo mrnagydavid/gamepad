@@ -1,5 +1,6 @@
 import type { ComponentType } from 'preact';
 import { drawThumbnail as minesweeperThumb } from './minesweeper/thumbnail';
+import { drawThumbnail as pipedreamThumb } from './pipedream/thumbnail';
 
 export interface GameMeta {
   id: string;
@@ -22,5 +23,12 @@ export const GAMES: GameMeta[] = [
     color: '#e94560',
     component: () => import('./minesweeper/index'),
     thumbnail: minesweeperThumb,
+  },
+  {
+    id: 'pipedream',
+    title: 'Pipe Dream',
+    color: '#7fdbca',
+    component: () => import('./pipedream/index'),
+    thumbnail: pipedreamThumb,
   },
 ];
