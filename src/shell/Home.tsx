@@ -51,10 +51,7 @@ export function Home({ onLaunch }: HomeProps) {
       if (pullY > 60 && !refreshing) {
         setRefreshing(true);
         setPullY(40);
-        loadLabels().then(() => {
-          setRefreshing(false);
-          setPullY(0);
-        });
+        window.location.reload();
       } else {
         setPullY(0);
       }
