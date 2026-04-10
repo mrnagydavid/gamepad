@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { GAMES, type GameMeta } from '../games/registry';
-import { getHighScore } from '../shared/storage/helpers';
 import { Button } from '../shared/ui/Button';
 import s from './home.module.css';
 
@@ -9,18 +8,68 @@ interface HomeProps {
 }
 
 export function Home({ onLaunch }: HomeProps) {
-  const [scores, setScores] = useState<Record<string, number>>({});
+  const [labels, setLabels] = useState<Record<string, string | null>>({});
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [pullY, setPullY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const homeRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef<number | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      const entries: Record<string, number> = {};
-      for (const g of GAMES) {
-        entries[g.id] = await getHighScore(g.id);
-      }
-      setScores(entries);
-    })();
+  const loadLabels = useCallback(async () => {
+    const entries: Record<string, string | null> = {};
+    for (const g of GAMES) {
+      entries[g.id] = g.bestLabel ? await g.bestLabel() : null;
+    }
+    setLabels(entries);
   }, []);
+
+  useEffect(() => { loadLabels(); }, [loadLabels]);
+
+  // Pull-to-refresh gesture
+  useEffect(() => {
+    const el = homeRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (el.scrollTop <= 0) {
+        touchStartY.current = e.touches[0].clientY;
+      } else {
+        touchStartY.current = null;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (touchStartY.current === null || refreshing) return;
+      const dy = e.touches[0].clientY - touchStartY.current;
+      if (dy > 0) {
+        e.preventDefault();
+        setPullY(Math.min(120, dy * 0.4));
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (pullY > 60 && !refreshing) {
+        setRefreshing(true);
+        setPullY(40);
+        loadLabels().then(() => {
+          setRefreshing(false);
+          setPullY(0);
+        });
+      } else {
+        setPullY(0);
+      }
+      touchStartY.current = null;
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [pullY, refreshing, loadLabels]);
 
   // PWA install prompt
   useEffect(() => {
@@ -39,7 +88,14 @@ export function Home({ onLaunch }: HomeProps) {
   };
 
   return (
-    <div class={s.home}>
+    <div class={s.home} ref={homeRef}>
+      {pullY > 0 && (
+        <div class={s.pullIndicator} style={{ height: `${pullY}px` }}>
+          <span class={refreshing ? s.pullSpinner : s.pullArrow}>
+            {refreshing ? '...' : pullY > 60 ? '\u2191' : '\u2193'}
+          </span>
+        </div>
+      )}
       <header class={s.header}>
         <h1 class={s.title}>GamePad</h1>
       </header>
@@ -57,9 +113,9 @@ export function Home({ onLaunch }: HomeProps) {
           >
             {game.thumbnail && <Thumbnail draw={game.thumbnail} />}
             <span class={s.cardTitle}>{game.title}</span>
-            {scores[game.id] ? (
-              <span class={s.cardScore}>Best: {scores[game.id]}</span>
-            ) : null}
+            {labels[game.id] && (
+              <span class={s.cardScore}>{labels[game.id]}</span>
+            )}
           </div>
         ))}
       </div>

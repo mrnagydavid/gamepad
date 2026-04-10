@@ -1,6 +1,7 @@
 import type { ComponentType } from 'preact';
 import { drawThumbnail as minesweeperThumb } from './minesweeper/thumbnail';
 import { drawThumbnail as pipedreamThumb } from './pipedream/thumbnail';
+import { getBestTime, getHighScore } from '../shared/storage/helpers';
 
 export interface GameMeta {
   id: string;
@@ -9,6 +10,8 @@ export interface GameMeta {
   component: () => Promise<{ default: ComponentType<GameProps> }>;
   /** Draw a small decorative thumbnail onto a canvas. */
   thumbnail?: (ctx: CanvasRenderingContext2D, w: number, h: number) => void;
+  /** Fetch and format the best score for the home screen. Returns null if no score. */
+  bestLabel?: () => Promise<string | null>;
 }
 
 export interface GameProps {
@@ -23,6 +26,13 @@ export const GAMES: GameMeta[] = [
     color: '#e94560',
     component: () => import('./minesweeper/index'),
     thumbnail: minesweeperThumb,
+    bestLabel: async () => {
+      const t = await getBestTime('minesweeper-easy');
+      if (!t) return null;
+      const mm = String(Math.floor(t / 60)).padStart(2, '0');
+      const ss = String(t % 60).padStart(2, '0');
+      return `Best: ${mm}:${ss}`;
+    },
   },
   {
     id: 'pipedream',
@@ -30,5 +40,9 @@ export const GAMES: GameMeta[] = [
     color: '#7fdbca',
     component: () => import('./pipedream/index'),
     thumbnail: pipedreamThumb,
+    bestLabel: async () => {
+      const s = await getHighScore('pipedream');
+      return s ? `Best: ${s}` : null;
+    },
   },
 ];
