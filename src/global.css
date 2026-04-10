@@ -31,7 +31,7 @@ body {
   user-select: none;
 }
 
-@media (min-width: 580px) {
+@media (min-width: 1024px) {
   body {
     background: #111119;
     display: flex;
