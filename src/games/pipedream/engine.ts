@@ -179,7 +179,7 @@ function startFillNext(state: PipeDreamState): boolean {
   cell.enterDir = enterDir;
 
   state.flowTiles++;
-  state.score += cell.piece === 'cross' ? CROSS_BONUS : 1;
+  state.score += 1;
 
   if (state.flowTiles % state.difficulty.speedupTiles === 0) {
     state.flowInterval = Math.max(state.difficulty.minFlowInterval, state.flowInterval - state.difficulty.speedupAmount);

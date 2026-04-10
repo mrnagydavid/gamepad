@@ -16,10 +16,13 @@ export default function PipeDream({ onQuit }: GameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [gameStatus, setGameStatus] = useState<string>('countdown');
   const [highScore, setHighScore] = useState(0);
+  const [highLevel, setHighLevel] = useState(0);
   const levelRef = useRef(1);
+  const totalScoreRef = useRef(0);
 
   useEffect(() => {
-    getHighScore('pipedream').then(setHighScore);
+    getHighScore('pipedream').then(setHighLevel);
+    getHighScore('pipedream-score').then(setHighScore);
   }, []);
 
   // Canvas resize
@@ -56,20 +59,21 @@ export default function PipeDream({ onQuit }: GameProps) {
         if (stateRef.current.status !== prev) {
           setGameStatus(stateRef.current.status);
         }
-        // Save highest level reached on game over (not on win — they'll go higher)
+        // Save highest level and score on game over
         if (stateRef.current.status === 'over' && prev !== 'over') {
           const lvl = stateRef.current.level;
+          const sc = totalScoreRef.current + stateRef.current.score;
           getHighScore('pipedream').then((best) => {
-            if (lvl > best) {
-              addScore('pipedream', lvl);
-              setHighScore(lvl);
-            }
+            if (lvl > best) { addScore('pipedream', lvl); setHighLevel(lvl); }
+          });
+          getHighScore('pipedream-score').then((best) => {
+            if (sc > best) { addScore('pipedream-score', sc); setHighScore(sc); }
           });
         }
       },
       render() {
         if (!stateRef.current || !ctxRef.current || !layoutRef.current) return;
-        renderPipes(ctxRef.current, stateRef.current, layoutRef.current);
+        renderPipes(ctxRef.current, stateRef.current, layoutRef.current, totalScoreRef.current);
       },
     },
     false,
@@ -77,6 +81,12 @@ export default function PipeDream({ onQuit }: GameProps) {
 
   const startLevel = useCallback((level: number) => {
     if (!containerRef.current) return;
+    // Accumulate score from previous level, or reset on restart
+    if (level === 1) {
+      totalScoreRef.current = 0;
+    } else if (stateRef.current) {
+      totalScoreRef.current += stateRef.current.score;
+    }
     levelRef.current = level;
     const w = containerRef.current.clientWidth;
     const h = containerRef.current.clientHeight;
@@ -154,7 +164,7 @@ export default function PipeDream({ onQuit }: GameProps) {
               onClick={() =>
                 gameStatus === 'won'
                   ? startLevel(levelRef.current + 1)
-                  : startLevel(levelRef.current)
+                  : startLevel(1)
               }
             >
               {gameStatus === 'won' ? 'Next Level' : 'Retry'}
@@ -166,7 +176,11 @@ export default function PipeDream({ onQuit }: GameProps) {
         <Button variant="secondary" onClick={onQuit}>
           Back
         </Button>
-        {highScore > 0 && <span class={s.best}>Best: Lv{highScore}</span>}
+        {(highLevel > 0 || highScore > 0) && (
+          <span class={s.best}>
+            {highLevel > 0 ? `Lv${highLevel}` : ''}{highLevel > 0 && highScore > 0 ? ' / ' : ''}{highScore > 0 ? `${highScore}pts` : ''}
+          </span>
+        )}
       </div>
     </div>
   );

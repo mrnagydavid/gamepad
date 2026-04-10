@@ -63,7 +63,7 @@ export function hitTestGrid(
   return [gr, gc];
 }
 
-export function render(ctx: CanvasRenderingContext2D, state: PipeDreamState, layout: Layout): void {
+export function render(ctx: CanvasRenderingContext2D, state: PipeDreamState, layout: Layout, totalScore = 0): void {
   const { cellSize, gridX, gridY, queueY, queueCellSize, hudH, queueH, width, height } = layout;
   const { grid, cols, rows, queue, sourceRow, sourceCol, sourceDir, score, status, countdownMs, flowInterval, level, targetPipes, flowTiles } = state;
 
@@ -139,10 +139,15 @@ export function render(ctx: CanvasRenderingContext2D, state: PipeDreamState, lay
   ctx.font = `${fontSize}px "Press Start 2P", monospace`;
   ctx.textBaseline = 'middle';
 
-  // Level (left)
+  // Level + score (left)
   ctx.fillStyle = HUD_TEXT;
   ctx.textAlign = 'left';
-  ctx.fillText(`Level ${level}`, 8, hudMidY);
+  ctx.fillText(`Lv${level}`, 8, hudMidY);
+
+  // Accumulated score (center)
+  ctx.textAlign = 'center';
+  ctx.fillStyle = HUD_DIM;
+  ctx.fillText(`${totalScore + score}`, width / 2, hudMidY);
 
   // Pipe target (right) — highlight when met
   ctx.textAlign = 'right';
