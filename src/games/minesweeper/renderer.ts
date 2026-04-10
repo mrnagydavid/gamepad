@@ -212,23 +212,31 @@ export function render(
   ctx.fillStyle = COLOR_BG;
   ctx.fillRect(0, 0, width, hudH);
   const fontSize = Math.max(10, Math.min(16, hudH * 0.35));
-  ctx.font = `${fontSize}px "Press Start 2P", monospace`;
-  ctx.textBaseline = 'middle';
+  const emojiSize = Math.round(fontSize * 1.6);
   const hudY = hudH / 2;
 
-  // Mine counter (left)
+  // Mine counter (left): emoji + number
   const remaining = totalMines - flagCount;
-  ctx.fillStyle = COLOR_HUD_TEXT;
+  ctx.font = `${emojiSize}px sans-serif`;
   ctx.textAlign = 'left';
-  ctx.fillText(`💣 ${remaining}`, 8, hudY);
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💣', 8, hudY);
+  ctx.font = `${fontSize}px "Press Start 2P", monospace`;
+  ctx.fillStyle = COLOR_HUD_TEXT;
+  ctx.fillText(`${remaining}`, 8 + emojiSize + 6, hudY);
 
+  // Smiley (center)
   const smiley = status === 'won' ? '😎' : status === 'lost' ? '💀' : '🙂';
+  ctx.font = `${emojiSize}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.fillText(smiley, width / 2, hudY);
 
+  // Timer (right)
   const seconds = Math.floor(elapsedMs / 1000);
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
+  ctx.font = `${fontSize}px "Press Start 2P", monospace`;
+  ctx.fillStyle = COLOR_HUD_TEXT;
   ctx.textAlign = 'right';
   ctx.fillText(`${mm}:${ss}`, width - 8, hudY);
 
