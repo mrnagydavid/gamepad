@@ -42,7 +42,7 @@ export const GAMES: GameMeta[] = [
     thumbnail: pipedreamThumb,
     bestLabel: async () => {
       const s = await getHighScore('pipedream');
-      return s ? `Best: ${s}` : null;
+      return s ? `Best: Lv${s}` : null;
     },
   },
 ];

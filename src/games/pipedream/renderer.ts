@@ -65,7 +65,7 @@ export function hitTestGrid(
 
 export function render(ctx: CanvasRenderingContext2D, state: PipeDreamState, layout: Layout): void {
   const { cellSize, gridX, gridY, queueY, queueCellSize, hudH, queueH, width, height } = layout;
-  const { grid, cols, rows, queue, sourceRow, sourceCol, sourceDir, score, status, countdownMs, flowInterval } = state;
+  const { grid, cols, rows, queue, sourceRow, sourceCol, sourceDir, score, status, countdownMs, flowInterval, level, targetPipes, flowTiles } = state;
 
   // Background
   ctx.fillStyle = BG;
@@ -93,18 +93,37 @@ export function render(ctx: CanvasRenderingContext2D, state: PipeDreamState, lay
       const x = gridX + c * cellSize;
       const y = gridY + r * cellSize;
 
-      ctx.fillStyle = CELL_BG;
-      ctx.fillRect(x, y, cellSize, cellSize);
-      ctx.strokeStyle = GRID_LINE;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1);
-
       const cell = grid[r][c];
+
+      if (cell.blocked) {
+        // Blocked cell — dark with cross-hatch
+        ctx.fillStyle = '#0a1520';
+        ctx.fillRect(x, y, cellSize, cellSize);
+        ctx.strokeStyle = '#1a2535';
+        ctx.lineWidth = 1;
+        const step = cellSize / 4;
+        for (let i = step; i < cellSize; i += step) {
+          ctx.beginPath();
+          ctx.moveTo(x + i, y);
+          ctx.lineTo(x, y + i);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x + cellSize - i, y + cellSize);
+          ctx.lineTo(x + cellSize, y + cellSize - i);
+          ctx.stroke();
+        }
+      } else {
+        ctx.fillStyle = CELL_BG;
+        ctx.fillRect(x, y, cellSize, cellSize);
+        ctx.strokeStyle = GRID_LINE;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1);
+      }
+
       if (cell.piece) {
         drawPipe(ctx, x, y, cellSize, cell.piece, cell.filledPaths, cell.fillProgress, cell.enterDir, cell.filling);
       }
 
-      // Source arrow inside the cell
       if (r === sourceRow && c === sourceCol && !cell.piece) {
         drawSourceArrow(ctx, x, y, cellSize, sourceDir);
       }
@@ -114,19 +133,22 @@ export function render(ctx: CanvasRenderingContext2D, state: PipeDreamState, lay
   // --- HUD ---
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, width, hudH);
-  const fontSize = Math.max(10, Math.min(16, hudH * 0.35));
+  const fontSize = Math.max(10, Math.min(14, hudH * 0.3));
   const hudMidY = hudH / 2;
 
   ctx.font = `${fontSize}px "Press Start 2P", monospace`;
   ctx.textBaseline = 'middle';
+
+  // Level (left)
   ctx.fillStyle = HUD_TEXT;
   ctx.textAlign = 'left';
-  ctx.fillText(`Score: ${score}`, 8, hudMidY);
+  ctx.fillText(`Level ${level}`, 8, hudMidY);
 
+  // Pipe target (right) — highlight when met
   ctx.textAlign = 'right';
-  ctx.fillStyle = HUD_DIM;
-  const speed = Math.round((1 - (flowInterval - 400) / 1600) * 100);
-  ctx.fillText(`Spd ${Math.min(100, speed)}%`, width - 8, hudMidY);
+  const met = flowTiles >= targetPipes;
+  ctx.fillStyle = met ? FLOW_COLOR : COUNTDOWN_COLOR;
+  ctx.fillText(`${flowTiles}/${targetPipes}`, width - 8, hudMidY);
 
   // Waiting for first click
   if (status === 'countdown') {
@@ -154,23 +176,28 @@ export function render(ctx: CanvasRenderingContext2D, state: PipeDreamState, lay
     ctx.fillText(`Flow in ${secs}...`, cx, cy);
   }
 
-  // Game over overlay
-  if (status === 'over') {
+  // End-of-round overlays
+  if (status === 'won' || status === 'over') {
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(gridX, gridY, cols * cellSize, rows * cellSize);
     const bigSize = Math.max(12, Math.min(28, width * 0.06));
     ctx.font = `${bigSize}px "Press Start 2P", monospace`;
-    ctx.fillStyle = COUNTDOWN_COLOR;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const cx = gridX + (cols * cellSize) / 2;
     const cy = gridY + (rows * cellSize) / 2;
-    ctx.fillText('GAME OVER', cx, cy - bigSize);
-    ctx.fillStyle = HUD_TEXT;
-    ctx.fillText(`Score: ${score}`, cx, cy + bigSize * 0.5);
-    ctx.font = `${Math.floor(bigSize * 0.5)}px "Press Start 2P", monospace`;
-    ctx.fillStyle = HUD_DIM;
-    ctx.fillText('Tap to restart', cx, cy + bigSize * 2);
+
+    if (status === 'won') {
+      ctx.fillStyle = FLOW_COLOR;
+      ctx.fillText(`LEVEL ${level} CLEAR!`, cx, cy - bigSize);
+      ctx.fillStyle = HUD_TEXT;
+      ctx.fillText(`${score} pts`, cx, cy + bigSize * 0.5);
+    } else {
+      ctx.fillStyle = COUNTDOWN_COLOR;
+      ctx.fillText('GAME OVER', cx, cy - bigSize);
+      ctx.fillStyle = HUD_TEXT;
+      ctx.fillText(`${flowTiles}/${targetPipes} pipes`, cx, cy + bigSize * 0.5);
+    }
   }
 }
 

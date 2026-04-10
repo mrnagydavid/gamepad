@@ -5,7 +5,7 @@ import { computeLayout, computeGridSize, hitTestGrid, render as renderPipes, typ
 import { useGameLoop } from '../../shared/hooks/useGameLoop';
 import { addScore, getHighScore } from '../../shared/storage/helpers';
 import { Button } from '../../shared/ui/Button';
-import type { PipeDreamState } from './types';
+import { DIFFICULTY, type PipeDreamState } from './types';
 import s from './pipedream.module.css';
 
 export default function PipeDream({ onQuit }: GameProps) {
@@ -16,21 +16,11 @@ export default function PipeDream({ onQuit }: GameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [gameStatus, setGameStatus] = useState<string>('countdown');
   const [highScore, setHighScore] = useState(0);
-
-  const startGame = useCallback(() => {
-    if (!containerRef.current) return;
-    const w = containerRef.current.clientWidth;
-    const h = containerRef.current.clientHeight;
-    const { cols, rows } = computeGridSize(w, h, 48);
-    stateRef.current = createState(cols, rows);
-    layoutRef.current = computeLayout(cols, rows, w, h);
-    setGameStatus('countdown');
-  }, []);
+  const levelRef = useRef(1);
 
   useEffect(() => {
-    startGame();
     getHighScore('pipedream').then(setHighScore);
-  }, [startGame]);
+  }, []);
 
   // Canvas resize
   useEffect(() => {
@@ -66,12 +56,13 @@ export default function PipeDream({ onQuit }: GameProps) {
         if (stateRef.current.status !== prev) {
           setGameStatus(stateRef.current.status);
         }
+        // Save highest level reached on game over (not on win — they'll go higher)
         if (stateRef.current.status === 'over' && prev !== 'over') {
-          const sc = stateRef.current.score;
+          const lvl = stateRef.current.level;
           getHighScore('pipedream').then((best) => {
-            if (sc > best) {
-              addScore('pipedream', sc);
-              setHighScore(sc);
+            if (lvl > best) {
+              addScore('pipedream', lvl);
+              setHighScore(lvl);
             }
           });
         }
@@ -84,23 +75,36 @@ export default function PipeDream({ onQuit }: GameProps) {
     false,
   );
 
+  const startLevel = useCallback((level: number) => {
+    if (!containerRef.current) return;
+    levelRef.current = level;
+    const w = containerRef.current.clientWidth;
+    const h = containerRef.current.clientHeight;
+    const { cols, rows } = computeGridSize(w, h, 48);
+    stateRef.current = createState(cols, rows, DIFFICULTY, level);
+    layoutRef.current = computeLayout(cols, rows, w, h);
+    setGameStatus('countdown');
+  }, []);
+
+  // Start level 1 once container is measured
+  useEffect(() => {
+    requestAnimationFrame(() => startLevel(1));
+  }, [startLevel]);
+
   const handleTap = useCallback(
     (x: number, y: number) => {
       const state = stateRef.current;
       const layout = layoutRef.current;
       if (!state || !layout) return;
 
-      if (state.status === 'over') {
-        startGame();
-        return;
-      }
+      if (state.status === 'won' || state.status === 'over') return;
 
       const hit = hitTestGrid(x, y, layout, state.cols, state.rows);
       if (hit) {
         placePiece(state, hit[0], hit[1]);
       }
     },
-    [startGame],
+    [startLevel],
   );
 
   const onMouseDown = useCallback(
@@ -144,12 +148,25 @@ export default function PipeDream({ onQuit }: GameProps) {
           onTouchEnd={onTouchEnd}
           onContextMenu={onContextMenu}
         />
+        {(gameStatus === 'won' || gameStatus === 'over') && (
+          <div class={s.endOverlay}>
+            <Button
+              onClick={() =>
+                gameStatus === 'won'
+                  ? startLevel(levelRef.current + 1)
+                  : startLevel(levelRef.current)
+              }
+            >
+              {gameStatus === 'won' ? 'Next Level' : 'Retry'}
+            </Button>
+          </div>
+        )}
       </div>
       <div class={s.bottomBar}>
         <Button variant="secondary" onClick={onQuit}>
           Back
         </Button>
-        {highScore > 0 && <span class={s.best}>Best: {highScore}</span>}
+        {highScore > 0 && <span class={s.best}>Best: Lv{highScore}</span>}
       </div>
     </div>
   );

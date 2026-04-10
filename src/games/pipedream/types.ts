@@ -36,35 +36,63 @@ export interface Cell {
   fillProgress: number; // 0-1, for animation
   /** Direction flow entered this cell from (for fill animation). */
   enterDir: Direction | null;
+  /** Blocked cell — cannot place pipes here. */
+  blocked: boolean;
 }
 
-export type GameStatus = 'countdown' | 'playing' | 'over';
+export type GameStatus = 'countdown' | 'playing' | 'won' | 'over';
+
+export interface Difficulty {
+  label: string;
+  initialFlowInterval: number;
+  minFlowInterval: number;
+  speedupTiles: number;
+  speedupAmount: number;
+  countdownMs: number;
+  /** 0-1: chance that a queue piece is biased toward the flow head direction. */
+  helpfulBias: number;
+}
+
+export const DIFFICULTY: Difficulty = {
+  label: 'Standard',
+  initialFlowInterval: 1700,
+  minFlowInterval: 400,
+  speedupTiles: 2,
+  speedupAmount: 60,
+  countdownMs: 4000,
+  helpfulBias: 0.1,
+};
 
 export interface PipeDreamState {
   grid: Cell[][];
   cols: number;
   rows: number;
-  queue: PieceType[];         // upcoming pieces, index 0 = next
+  queue: PieceType[];
   sourceCol: number;
   sourceRow: number;
-  sourceDir: Direction;       // direction flow exits the source
+  sourceDir: Direction;
   flowHead: { r: number; c: number; enterDir: Direction } | null;
-  flowTimer: number;          // ms until next flow step
-  flowInterval: number;       // ms between flow steps (decreases over time)
-  flowTiles: number;          // tiles successfully flowed through
+  flowTimer: number;
+  flowInterval: number;
+  flowTiles: number;
   score: number;
   status: GameStatus;
-  countdownMs: number;        // ms remaining in countdown before flow starts
+  countdownMs: number;
   elapsedMs: number;
+  difficulty: Difficulty;
+  level: number;
+  targetPipes: number;  // minimum pipes to pass
+}
+
+/** Compute level parameters. */
+export function levelParams(level: number): { targetPipes: number; blockedCount: number } {
+  const targetPipes = 5 + level * 3;
+  const blockedCount = Math.max(0, Math.floor((level - 1) * 2));
+  return { targetPipes, blockedCount };
 }
 
 export const TARGET_CELL_SIZE = 48;
 export const MIN_COLS = 5;
 export const MIN_ROWS = 6;
 export const QUEUE_SIZE = 5;
-export const COUNTDOWN_MS = 5000;
-export const INITIAL_FLOW_INTERVAL = 2000;
-export const MIN_FLOW_INTERVAL = 400;
-export const FLOW_SPEEDUP_TILES = 5; // speed up every N tiles
-export const FLOW_SPEEDUP_AMOUNT = 150; // ms faster each step
-export const CROSS_BONUS = 2;  // score multiplier for cross pieces
+export const CROSS_BONUS = 2;
