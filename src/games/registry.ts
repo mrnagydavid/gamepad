@@ -1,6 +1,7 @@
 import type { ComponentType } from 'preact';
 import { drawThumbnail as minesweeperThumb } from './minesweeper/thumbnail';
 import { drawThumbnail as pipedreamThumb } from './pipedream/thumbnail';
+import { drawThumbnail as bangbangThumb } from './bangbang/thumbnail';
 import { getBestTime, getHighScore } from '../shared/storage/helpers';
 
 export interface GameMeta {
@@ -43,6 +44,17 @@ export const GAMES: GameMeta[] = [
     bestLabel: async () => {
       const s = await getHighScore('pipedream');
       return s ? `Best: Lv${s}` : null;
+    },
+  },
+  {
+    id: 'bangbang',
+    title: 'Bang! Bang!',
+    color: '#f4a261',
+    component: () => import('./bangbang/index'),
+    thumbnail: bangbangThumb,
+    bestLabel: async () => {
+      const s = await getBestTime('bangbang-shots');
+      return s ? `Best: ${s} shots` : null;
     },
   },
 ];
