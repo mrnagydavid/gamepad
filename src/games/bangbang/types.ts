@@ -74,7 +74,7 @@ export const ANGLE_MAX = 90;
 export const ANGLE_STEP = 1;
 export const POWER_MIN = 10;
 export const POWER_MAX = 100;
-export const POWER_STEP = 2;
+export const POWER_STEP = 1;
 export const HIT_RADIUS = 25;
 
 // Timing

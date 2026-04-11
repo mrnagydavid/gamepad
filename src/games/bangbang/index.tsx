@@ -176,14 +176,14 @@ export default function BangBang({ onQuit }: GameProps) {
         {isHumanAiming ? (
           <div class={s.controlRow}>
             <div class={s.group}>
-              <Button variant="secondary" onClick={() => handleAngle(-ANGLE_STEP)}>-</Button>
+              <RepeatButton onAction={() => handleAngle(-ANGLE_STEP)}>-</RepeatButton>
               <span class={s.readout}>{currentP!.angle}°</span>
-              <Button variant="secondary" onClick={() => handleAngle(ANGLE_STEP)}>+</Button>
+              <RepeatButton onAction={() => handleAngle(ANGLE_STEP)}>+</RepeatButton>
             </div>
             <div class={s.group}>
-              <Button variant="secondary" onClick={() => handlePower(-POWER_STEP)}>-</Button>
+              <RepeatButton onAction={() => handlePower(-POWER_STEP)}>-</RepeatButton>
               <span class={s.readout}>{currentP!.power}</span>
-              <Button variant="secondary" onClick={() => handlePower(POWER_STEP)}>+</Button>
+              <RepeatButton onAction={() => handlePower(POWER_STEP)}>+</RepeatButton>
             </div>
             <Button onClick={handleFire}>FIRE</Button>
           </div>
@@ -200,5 +200,44 @@ export default function BangBang({ onQuit }: GameProps) {
         {bestShots > 0 && <span class={s.best}>Best: {bestShots} shots</span>}
       </div>
     </div>
+  );
+}
+
+const REPEAT_DELAY = 350; // ms before repeat starts
+const REPEAT_INTERVAL = 80; // ms between repeats
+
+/** Button that fires on press and repeats while held. */
+function RepeatButton({ onAction, children, ...rest }: { onAction: () => void; children: any } & Record<string, any>) {
+  const timerRef = useRef<number | null>(null);
+  const intervalRef = useRef<number | null>(null);
+
+  const stop = useCallback(() => {
+    if (timerRef.current !== null) { clearTimeout(timerRef.current); timerRef.current = null; }
+    if (intervalRef.current !== null) { clearInterval(intervalRef.current); intervalRef.current = null; }
+  }, []);
+
+  const start = useCallback(() => {
+    onAction();
+    stop();
+    timerRef.current = window.setTimeout(() => {
+      intervalRef.current = window.setInterval(onAction, REPEAT_INTERVAL);
+    }, REPEAT_DELAY);
+  }, [onAction, stop]);
+
+  useEffect(() => stop, [stop]);
+
+  return (
+    <Button
+      variant="secondary"
+      onMouseDown={start}
+      onMouseUp={stop}
+      onMouseLeave={stop}
+      onTouchStart={(e: TouchEvent) => { e.preventDefault(); start(); }}
+      onTouchEnd={stop}
+      onTouchCancel={stop}
+      {...rest}
+    >
+      {children}
+    </Button>
   );
 }
