@@ -7,13 +7,15 @@ const PIPE_BORDER = '#2c5f7a';
 const FLOW = '#7fdbca';
 const SOURCE = '#e5c07b';
 
-// Simplified board: H=horizontal, V=vertical, 1-4=curves(tr,rb,bl,lt), X=cross, .=empty
+// Simplified board: H=horizontal, V=vertical, 1=curve_tr, 2=curve_rb, 3=curve_bl, 4=curve_lt, .=empty
+// Valid S-curve path: source enters (0,2) from top, flows through connected pipes.
+// Path: (0,2)V→(1,2)1→(1,3)H→(1,4)3→(2,4)4→(2,3)H→(2,2)2→(3,2)1→(3,3)H→(3,4)3→(4,4)V
 const BOARD = [
-  ['.', '.', '4', 'H', '3', '.', '.'],
-  ['.', '.', 'V', '.', 'V', '.', '.'],
-  ['.', '1', 'X', 'H', '2', '.', '.'],
-  ['.', 'V', '.', '.', '.', '.', '.'],
-  ['.', '1', 'H', 'H', '3', '.', '.'],
+  ['.', '3', 'V', '.', '.', '.', '.'],
+  ['.', '.', '1', 'H', '3', '.', '.'],
+  ['.', 'H', '2', 'H', '4', '.', '.'],
+  ['.', '.', '1', 'H', '3', '.', '.'],
+  ['.', '.', '.', '.', 'V', '.', '.'],
 ];
 
 const PIECE_MAP: Record<string, [string, string][]> = {
@@ -23,11 +25,12 @@ const PIECE_MAP: Record<string, [string, string][]> = {
   '2': [['right', 'bottom']],
   '3': [['bottom', 'left']],
   '4': [['left', 'top']],
-  X: [['left', 'right'], ['top', 'bottom']],
 };
 
-// Which cells have flow
-const FLOW_CELLS = new Set(['1,2', '2,2', '2,3', '2,4', '3,1', '3,2', '4,1']);
+// All cells on the flow path
+const FLOW_CELLS = new Set([
+  '0,2', '1,2', '1,3', '1,4', '2,2', '2,3', '2,4', '3,2', '3,3', '3,4', '4,4',
+]);
 
 export function drawThumbnail(ctx: CanvasRenderingContext2D, w: number, h: number): void {
   const cols = BOARD[0].length;

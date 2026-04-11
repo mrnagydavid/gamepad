@@ -10,13 +10,14 @@ const MINE = '#e06c75';
 const NUM_COLORS = ['', '#5b86e5', '#4caf50', '#e53935', '#1a237e'];
 
 // Fixed decorative board (0 = hidden, 1-4 = revealed number, F = flag, M = mine)
+// Mines at (1,1) and (0,2)=flagged. Numbers verified for all interior cells.
 const BOARD = [
-  ['1', '1', 'F', 'H', 'H', 'H', 'H', 'H'],
-  ['1', 'M', '2', '2', 'H', 'H', 'H', 'H'],
-  ['1', '2', '0', '1', 'H', 'H', 'F', 'H'],
-  ['0', '1', '1', '1', '2', 'H', 'H', 'H'],
+  ['1', '2', 'F', 'H', 'H', 'H', 'H', 'H'],
+  ['1', 'M', '2', '1', 'H', 'H', 'H', 'H'],
+  ['1', '1', '1', '1', 'H', 'H', 'F', 'H'],
+  ['0', '0', '0', '1', 'H', 'H', 'H', 'H'],
   ['0', '0', '0', '0', '1', 'H', 'H', 'H'],
-  ['0', '0', '1', '1', '2', 'H', 'H', 'H'],
+  ['0', '0', '0', '0', '1', 'H', 'H', 'H'],
 ];
 
 export function drawThumbnail(ctx: CanvasRenderingContext2D, w: number, h: number): void {
