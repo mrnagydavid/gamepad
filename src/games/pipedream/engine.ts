@@ -75,12 +75,14 @@ export function createState(cols: number, rows: number, diff: Difficulty, level 
       break;
   }
 
-  // Place blocked cells for higher levels
+  // Place blocked cells for higher levels, keeping a clear zone around the source
   const { targetPipes, blockedCount } = levelParams(level);
+  const SAFE_DIST = 3; // Manhattan distance from source that must stay clear
   const candidates: [number, number][] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      if (r === sourceRow && c === sourceCol) continue;
+      const dist = Math.abs(r - sourceRow) + Math.abs(c - sourceCol);
+      if (dist < SAFE_DIST) continue;
       candidates.push([r, c]);
     }
   }
