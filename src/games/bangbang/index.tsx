@@ -176,16 +176,20 @@ export default function BangBang({ onQuit }: GameProps) {
         {isHumanAiming ? (
           <div class={s.controlRow}>
             <div class={s.group}>
-              <RepeatButton onAction={() => handleAngle(-ANGLE_STEP)}>-</RepeatButton>
               <span class={s.readout}>{currentP!.angle}°</span>
-              <RepeatButton onAction={() => handleAngle(ANGLE_STEP)}>+</RepeatButton>
+              <div class={s.btnRow}>
+                <RepeatButton onAction={() => handleAngle(-ANGLE_STEP)}>-</RepeatButton>
+                <RepeatButton onAction={() => handleAngle(ANGLE_STEP)}>+</RepeatButton>
+              </div>
             </div>
             <div class={s.group}>
-              <RepeatButton onAction={() => handlePower(-POWER_STEP)}>-</RepeatButton>
               <span class={s.readout}>{currentP!.power}</span>
-              <RepeatButton onAction={() => handlePower(POWER_STEP)}>+</RepeatButton>
+              <div class={s.btnRow}>
+                <RepeatButton onAction={() => handlePower(-POWER_STEP)}>-</RepeatButton>
+                <RepeatButton onAction={() => handlePower(POWER_STEP)}>+</RepeatButton>
+              </div>
             </div>
-            <Button onClick={handleFire}>FIRE</Button>
+            <Button class={s.fireBtn} onClick={handleFire}>FIRE</Button>
           </div>
         ) : (
           <span class={s.status}>

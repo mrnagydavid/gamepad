@@ -59,27 +59,58 @@
   justify-content: center;
   padding: 0.4rem 0.5rem;
   background: var(--color-surface);
-  min-height: 3rem;
+  min-height: 6.5rem;
 }
 
 .controlRow {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.75rem;
 }
 
 .group {
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  border: 2px solid var(--color-secondary);
+  border-radius: 4px;
+  background: var(--color-bg);
+  box-shadow: 0 4px 0 #071d38;
+  margin-bottom: 4px;
+}
+
+.btnRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 0.35rem;
+}
+
+.btnRow > * {
+  flex: 1;
+  box-shadow: none !important;
+  border: 2px solid var(--color-secondary) !important;
+  border-radius: 3px !important;
+  margin-bottom: 0 !important;
 }
 
 .readout {
   font-family: var(--font-pixel);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: var(--color-text);
-  min-width: 2.5rem;
   text-align: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--color-secondary);
+}
+
+.fireBtn {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.25rem !important;
+  margin-bottom: 4px;
 }
 
 .status {

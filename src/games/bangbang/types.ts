@@ -79,7 +79,7 @@ export const HIT_RADIUS = 25;
 
 // Timing
 export const CPU_THINK_MS = 1200;
-export const EXPLOSION_MS = 400;
+export const EXPLOSION_MS = 600;
 export const SWITCH_MS = 600;
 
 // Terrain generation
