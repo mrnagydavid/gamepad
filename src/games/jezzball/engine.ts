@@ -1,5 +1,5 @@
 import {
-  type Cell, type Ball, type GrowingWall, type JezzState, type Axis,
+  type Cell, type Ball, type JezzState, type Axis,
   TARGET_CELL_SIZE, MIN_COLS, MIN_ROWS, BALL_SPEED, WALL_GROWTH_MS,
   TARGET_PERCENT, LIVES_PER_LEVEL, HUD_H, BALL_RADIUS_RATIO,
 } from './types';
@@ -62,6 +62,7 @@ export function createState(canvasW: number, canvasH: number, level: number): Je
     capturedCount: 0,
     totalCells,
     percent: 0,
+    score: 0,
     status: 'playing',
     canvasW,
     canvasH,
@@ -88,11 +89,42 @@ export function startWall(state: JezzState, row: number, col: number, axis: Axis
   return true;
 }
 
-/** Cancel growing wall — solidify whatever was built into permanent wall cells. */
+/** Resolve the currently growing wall using the classic Jezzball rule:
+ *  only anchored sides are kept (from origin up to the barrier). Unanchored
+ *  sides are discarded. If neither side anchored, the whole wall is removed. */
+function resolveGrowing(state: JezzState): void {
+  const g = state.growing;
+  if (!g) return;
+
+  const anyAnchored = g.leftDone || g.rightDone;
+  const originR = g.originRow;
+  const originC = g.originCol;
+
+  const keepSide = (r: number, c: number, anchored: boolean) => {
+    if (state.grid[r][c] !== 'growing') return;
+    state.grid[r][c] = anchored ? 'wall' : 'empty';
+  };
+
+  if (g.axis === 'h') {
+    for (let c = g.leftEnd; c < originC; c++) keepSide(originR, c, g.leftDone);
+    for (let c = originC + 1; c <= g.rightEnd; c++) keepSide(originR, c, g.rightDone);
+  } else {
+    for (let r = g.leftEnd; r < originR; r++) keepSide(r, originC, g.leftDone);
+    for (let r = originR + 1; r <= g.rightEnd; r++) keepSide(r, originC, g.rightDone);
+  }
+
+  // Origin: kept if anything was anchored, discarded otherwise
+  if (state.grid[originR][originC] === 'growing') {
+    state.grid[originR][originC] = anyAnchored ? 'wall' : 'empty';
+  }
+
+  state.growing = null;
+}
+
+/** Cancel growing wall (user action). */
 export function cancelWall(state: JezzState): void {
   if (!state.growing) return;
-  solidifyGrowing(state);
-  state.growing = null;
+  resolveGrowing(state);
   captureRegions(state);
 }
 
@@ -104,17 +136,12 @@ function solidifyGrowing(state: JezzState): void {
   }
 }
 
-/** A ball hit a growing wall cell — destroy the entire wall and lose a life. */
+/** A ball hit a growing wall cell. Resolve with the same anchor rule as cancel,
+ *  and lose a life. Anchored sides stay; unanchored sides (including the hit side) are lost. */
 function killWall(state: JezzState): void {
   if (!state.growing) return;
-
-  // Remove all growing cells
-  for (let r = 0; r < state.rows; r++) {
-    for (let c = 0; c < state.cols; c++) {
-      if (state.grid[r][c] === 'growing') state.grid[r][c] = 'empty';
-    }
-  }
-  state.growing = null;
+  resolveGrowing(state);
+  captureRegions(state);
 
   state.lives--;
   if (state.lives <= 0) {
@@ -251,9 +278,20 @@ export function captureRegions(state: JezzState): void {
     }
   }
 
+  // Award points for newly-captured cells (scaled by level)
+  const delta = captured - state.capturedCount;
+  if (delta > 0) {
+    state.score += delta * state.level * 10;
+  }
+
   state.capturedCount = captured;
   state.percent = captured / state.totalCells;
-  if (state.percent >= TARGET_PERCENT) state.status = 'levelclear';
+  if (state.percent >= TARGET_PERCENT && state.status === 'playing') {
+    // Level clear bonus: extra points for percent over target and remaining lives
+    const bonusPercent = Math.floor((state.percent - TARGET_PERCENT) * 100);
+    state.score += state.level * 500 + bonusPercent * state.level * 20 + state.lives * 250;
+    state.status = 'levelclear';
+  }
 }
 
 function isSolidCell(state: JezzState, r: number, c: number): boolean {

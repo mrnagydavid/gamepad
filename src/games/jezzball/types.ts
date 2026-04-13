@@ -34,6 +34,7 @@ export interface JezzState {
   capturedCount: number;
   totalCells: number;
   percent: number;
+  score: number;
   status: GameStatus;
   canvasW: number;
   canvasH: number;
@@ -49,7 +50,7 @@ export const MIN_ROWS = 18;
 // Gameplay
 export const BALL_RADIUS_RATIO = 0.4; // fraction of cellSize
 export const BALL_SPEED = 1.2;
-export const WALL_GROWTH_MS = 80;
+export const WALL_GROWTH_MS = 125;
 export const TARGET_PERCENT = 0.75;
 export const LIVES_PER_LEVEL = 3;
 export const SWIPE_THRESHOLD = 8;

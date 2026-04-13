@@ -66,7 +66,7 @@ export const GAMES: GameMeta[] = [
     thumbnail: jezzballThumb,
     bestLabel: async () => {
       const s = await getHighScore('jezzball');
-      return s ? `Best: Lv${s}` : null;
+      return s ? `Best: ${s}` : null;
     },
   },
 ];

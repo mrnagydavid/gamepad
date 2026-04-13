@@ -169,18 +169,21 @@ export function render(
   ctx.textBaseline = 'middle';
   const hudY = hudH / 2;
 
-  // Level (left)
+  // Level + lives (left)
   ctx.fillStyle = HUD_TEXT;
   ctx.textAlign = 'left';
   ctx.fillText(`Lv${state.level}`, 8, hudY);
-
-  // Lives (center-left)
   const heartSize = 5;
-  const heartsX = 70;
+  const heartsX = 8 + Math.ceil(`Lv${state.level}`.length * fontSize) + 12;
   for (let i = 0; i < 3; i++) {
     ctx.fillStyle = i < state.lives ? HEART : HEART_EMPTY;
     drawHeart(ctx, heartsX + i * 14, hudY, heartSize);
   }
+
+  // Score (center)
+  ctx.fillStyle = HUD_TEXT;
+  ctx.textAlign = 'center';
+  ctx.fillText(`${state.score}`, w / 2, hudY);
 
   // Percent (right)
   const pct = Math.floor(state.percent * 100);

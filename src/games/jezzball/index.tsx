@@ -18,6 +18,7 @@ export default function Jezzball({ onQuit }: GameProps) {
   const [hintVisible, setHintVisible] = useState(true);
   const [highScore, setHighScore] = useState(0);
   const levelRef = useRef(1);
+  const carryScoreRef = useRef(0);
   const previewRef = useRef<{ row: number; col: number; axis: Axis } | null>(null);
   const dragRef = useRef<{ startX: number; startY: number; row: number; col: number; axis: Axis | null } | null>(null);
 
@@ -52,10 +53,12 @@ export default function Jezzball({ onQuit }: GameProps) {
 
   const startLevel = useCallback((level: number) => {
     if (!containerRef.current) return;
+    if (level === 1) carryScoreRef.current = 0;
     levelRef.current = level;
     const w = containerRef.current.clientWidth;
     const h = containerRef.current.clientHeight;
     stateRef.current = createState(w, h, level);
+    stateRef.current.score = carryScoreRef.current;
     layoutRef.current = computeLayout(stateRef.current, w, h);
     setGameStatus('playing');
     setHintVisible(level === 1);
@@ -74,12 +77,15 @@ export default function Jezzball({ onQuit }: GameProps) {
         const prev = st.status;
         tick(st, dt);
         if (st.status !== prev) setGameStatus(st.status);
+        if (st.status === 'levelclear' && prev !== 'levelclear') {
+          carryScoreRef.current = st.score;
+        }
         if (st.status === 'gameover' && prev !== 'gameover') {
-          const lvl = st.level;
+          const sc = st.score;
           getHighScore('jezzball').then((best) => {
-            if (lvl > best) {
-              addScore('jezzball', lvl);
-              setHighScore(lvl);
+            if (sc > best) {
+              addScore('jezzball', sc);
+              setHighScore(sc);
             }
           });
         }
@@ -186,14 +192,16 @@ export default function Jezzball({ onQuit }: GameProps) {
         {gameStatus === 'gameover' && (
           <div class={s.overlay}>
             <div class={s.overlayText}>Game Over</div>
-            <div class={s.overlaySub}>Reached level {levelRef.current}</div>
+            <div class={s.overlaySub}>
+              Score: {stateRef.current?.score ?? 0} · Level {levelRef.current}
+            </div>
             <Button onClick={() => startLevel(1)}>Play Again</Button>
           </div>
         )}
       </div>
       <div class={s.bottomBar}>
         <Button variant="secondary" onClick={onQuit}>Back</Button>
-        {highScore > 0 && <span class={s.best}>Best: Lv{highScore}</span>}
+        {highScore > 0 && <span class={s.best}>Best: {highScore}</span>}
       </div>
     </div>
   );
