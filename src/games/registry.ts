@@ -2,6 +2,7 @@ import type { ComponentType } from 'preact';
 import { drawThumbnail as minesweeperThumb } from './minesweeper/thumbnail';
 import { drawThumbnail as pipedreamThumb } from './pipedream/thumbnail';
 import { drawThumbnail as bangbangThumb } from './bangbang/thumbnail';
+import { drawThumbnail as jezzballThumb } from './jezzball/thumbnail';
 import { getBestTime, getHighScore } from '../shared/storage/helpers';
 
 export interface GameMeta {
@@ -55,6 +56,17 @@ export const GAMES: GameMeta[] = [
     bestLabel: async () => {
       const s = await getBestTime('bangbang-shots');
       return s ? `Best: ${s} shots` : null;
+    },
+  },
+  {
+    id: 'jezzball',
+    title: 'Jezzball',
+    color: '#53d8fb',
+    component: () => import('./jezzball/index'),
+    thumbnail: jezzballThumb,
+    bestLabel: async () => {
+      const s = await getHighScore('jezzball');
+      return s ? `Best: Lv${s}` : null;
     },
   },
 ];
