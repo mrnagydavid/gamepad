@@ -132,24 +132,29 @@ const THUMB_W = 140;
 const THUMB_H = 90;
 
 function Thumbnail({ draw }: { draw: GameMeta['thumbnail'] }) {
-  const ref = useRef<HTMLCanvasElement>(null);
+  const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas || !draw) return;
+    if (!draw) return;
     const dpr = window.devicePixelRatio || 1;
+    const canvas = document.createElement('canvas');
     canvas.width = THUMB_W * dpr;
     canvas.height = THUMB_H * dpr;
     const ctx = canvas.getContext('2d')!;
     ctx.scale(dpr, dpr);
     draw(ctx, THUMB_W, THUMB_H);
+    setSrc(canvas.toDataURL('image/png'));
   }, [draw]);
 
+  if (!src) {
+    return <div class={s.thumb} style={{ width: `${THUMB_W}px`, height: `${THUMB_H}px` }} />;
+  }
   return (
-    <canvas
-      ref={ref}
+    <img
+      src={src}
       class={s.thumb}
       style={{ width: `${THUMB_W}px`, height: `${THUMB_H}px` }}
+      alt=""
     />
   );
 }
