@@ -37,6 +37,8 @@ export interface JezzState {
   status: GameStatus;
   canvasW: number;
   canvasH: number;
+  /** True once the player has successfully started any wall — used to hide the tutorial hint. */
+  hasStartedWall: boolean;
 }
 
 // Sizing

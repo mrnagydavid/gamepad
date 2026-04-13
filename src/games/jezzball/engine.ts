@@ -65,6 +65,7 @@ export function createState(canvasW: number, canvasH: number, level: number): Je
     status: 'playing',
     canvasW,
     canvasH,
+    hasStartedWall: false,
   };
 }
 
@@ -83,6 +84,7 @@ export function startWall(state: JezzState, row: number, col: number, axis: Axis
     leftDone: false, rightDone: false,
     growthTimer: WALL_GROWTH_MS,
   };
+  state.hasStartedWall = true;
   return true;
 }
 

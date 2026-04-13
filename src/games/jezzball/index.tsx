@@ -15,6 +15,7 @@ export default function Jezzball({ onQuit }: GameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [gameStatus, setGameStatus] = useState<string>('playing');
+  const [hintVisible, setHintVisible] = useState(true);
   const [highScore, setHighScore] = useState(0);
   const levelRef = useRef(1);
   const previewRef = useRef<{ row: number; col: number; axis: Axis } | null>(null);
@@ -57,6 +58,7 @@ export default function Jezzball({ onQuit }: GameProps) {
     stateRef.current = createState(w, h, level);
     layoutRef.current = computeLayout(stateRef.current, w, h);
     setGameStatus('playing');
+    setHintVisible(level === 1);
   }, []);
 
   useEffect(() => {
@@ -103,6 +105,7 @@ export default function Jezzball({ onQuit }: GameProps) {
 
   const onPointerDown = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
+    setHintVisible(false);
     const st = stateRef.current;
     const layout = layoutRef.current;
     if (!st || !layout || st.status !== 'playing') return;
@@ -169,6 +172,11 @@ export default function Jezzball({ onQuit }: GameProps) {
           onTouchCancel={onPointerCancel}
           onContextMenu={(e: Event) => e.preventDefault()}
         />
+        {hintVisible && gameStatus === 'playing' && (
+          <div class={s.hintOverlay}>
+            <div class={s.hintText}>Swipe ↕ or ↔</div>
+          </div>
+        )}
         {gameStatus === 'levelclear' && (
           <div class={s.overlay}>
             <div class={s.overlayText}>Level {levelRef.current} Clear!</div>
