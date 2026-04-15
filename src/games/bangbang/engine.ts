@@ -150,16 +150,15 @@ function computeCpuShot(state: BangState): { angle: number; power: number } {
   let bestPower = 50;
   let bestDist = Infinity;
 
-  // Brute force simulation
-  for (let a = 10; a <= 80; a += 2) {
-    for (let pw = 20; pw <= 95; pw += 5) {
+  // Brute-force search under current wind — finer grid than before
+  for (let a = 10; a <= 80; a += 1) {
+    for (let pw = 20; pw <= 95; pw += 2) {
       const rad = (a * Math.PI) / 180;
       let x = cpu.x + Math.cos(rad) * BARREL_LEN * dir;
       let y = cpu.cannonY - Math.sin(rad) * BARREL_LEN;
       let vx = Math.cos(rad) * pw * POWER_SCALE * dir;
       let vy = -Math.sin(rad) * pw * POWER_SCALE;
 
-      // Simulate up to 600 steps
       for (let i = 0; i < 600; i++) {
         x += vx;
         y += vy;
@@ -181,10 +180,13 @@ function computeCpuShot(state: BangState): { angle: number; power: number } {
     }
   }
 
-  // Add error
-  const error = 8;
-  bestAngle += (Math.random() - 0.5) * error * 2;
-  bestPower += (Math.random() - 0.5) * 12 * 2;
+  // Error shrinks with shots fired — first shot is a rangefinder, later shots dial in.
+  // Shot count resets each new game (createState zeroes `shots`).
+  const shotsFired = state.shots[cpu.id];
+  const angleErr = Math.max(2, 12 - shotsFired * 3);  // 12 → 9 → 6 → 3 → 2
+  const powerErr = Math.max(3, 15 - shotsFired * 4);  // 15 → 11 → 7 → 3
+  bestAngle += (Math.random() - 0.5) * angleErr * 2;
+  bestPower += (Math.random() - 0.5) * powerErr * 2;
   bestAngle = Math.max(ANGLE_MIN, Math.min(ANGLE_MAX, Math.round(bestAngle)));
   bestPower = Math.max(POWER_MIN, Math.min(POWER_MAX, Math.round(bestPower)));
 
