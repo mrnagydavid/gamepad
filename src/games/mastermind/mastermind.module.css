@@ -1,0 +1,247 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.boardWrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.board {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.board::-webkit-scrollbar {
+  display: none;
+}
+
+.boardFadeTop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--color-bg) 0%,
+    rgba(26, 26, 46, 0.7) 50%,
+    rgba(26, 26, 46, 0) 100%
+  );
+  z-index: 2;
+}
+
+.secretRow {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border-radius: 8px;
+  border: 2px solid var(--color-secondary);
+}
+
+.secretDivider {
+  width: 80%;
+  max-width: 340px;
+  border-top: 2px solid var(--color-secondary);
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.historyWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.historyRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.3rem 0.75rem;
+}
+
+.pegGroup {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.peg {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #222;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.activePeg {
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.15s;
+}
+
+.activePeg:active {
+  transform: scale(0.92);
+}
+
+.activePegOpen {
+  border-width: 3px;
+  box-shadow: 0 0 0 2px rgba(83, 216, 251, 0.3);
+}
+
+.guessNum {
+  font-family: var(--font-pixel);
+  font-size: 0.55rem;
+  color: var(--color-text-dim);
+  min-width: 1.6rem;
+  text-align: right;
+}
+
+.classicMarker {
+  width: 100%;
+  max-width: 360px;
+  border-top: 2px dashed var(--color-accent);
+  margin: 0.5rem 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.classicMarkerText {
+  position: absolute;
+  top: -0.55rem;
+  background: var(--color-bg);
+  padding: 0 0.5rem;
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.feedback {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-secondary);
+  border-radius: 4px;
+}
+
+.pin {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid;
+}
+
+.pinEmpty {
+  width: 8px;
+  height: 8px;
+}
+
+/* Picker slot: reserved space above the active row. Always present for layout symmetry. */
+.pickerSlot {
+  flex-shrink: 0;
+  height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+}
+
+.pickerRow {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.pickerSwatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #222;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.pickerSwatch:active {
+  transform: scale(0.9);
+}
+
+.activeRow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--color-surface);
+  border-top: 2px solid var(--color-primary);
+}
+
+.disabledBtn {
+  opacity: 0.5;
+}
+
+.overlay {
+  position: absolute;
+  top: 4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+.overlayTitle {
+  font-family: var(--font-pixel);
+  font-size: 0.85rem;
+  color: var(--color-accent);
+}
+
+.overlaySub {
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  color: var(--color-text-dim);
+}
+
+.bottomBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: var(--color-surface);
+  border-top: 2px solid var(--color-secondary);
+}
+
+.best {
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  color: var(--color-text-dim);
+}

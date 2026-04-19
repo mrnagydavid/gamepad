@@ -3,6 +3,7 @@ import { drawThumbnail as minesweeperThumb } from './minesweeper/thumbnail';
 import { drawThumbnail as pipedreamThumb } from './pipedream/thumbnail';
 import { drawThumbnail as bangbangThumb } from './bangbang/thumbnail';
 import { drawThumbnail as jezzballThumb } from './jezzball/thumbnail';
+import { drawThumbnail as mastermindThumb } from './mastermind/thumbnail';
 import { getBestTime, getHighScore } from '../shared/storage/helpers';
 
 export interface GameMeta {
@@ -67,6 +68,17 @@ export const GAMES: GameMeta[] = [
     bestLabel: async () => {
       const s = await getHighScore('jezzball');
       return s ? `Best: ${s}` : null;
+    },
+  },
+  {
+    id: 'mastermind',
+    title: 'Mastermind',
+    color: '#a66cff',
+    component: () => import('./mastermind/index'),
+    thumbnail: mastermindThumb,
+    bestLabel: async () => {
+      const n = await getBestTime('mastermind');
+      return n ? `Best: ${n} guesses` : null;
     },
   },
 ];
