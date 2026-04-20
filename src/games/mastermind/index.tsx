@@ -14,7 +14,7 @@ export default function Mastermind({ onQuit }: GameProps) {
   if (stateRef.current === null) stateRef.current = createState();
   const boardRef = useRef<HTMLDivElement>(null);
   const [, forceUpdate] = useState(0);
-  const [pickerSlot, setPickerSlot] = useState<number | null>(null);
+  const [pickerSlot, setPickerSlot] = useState<number | null>(0);
   const [bestGuesses, setBestGuesses] = useState(0);
   const [scrolledFromTop, setScrolledFromTop] = useState(false);
 
@@ -47,7 +47,9 @@ export default function Mastermind({ onQuit }: GameProps) {
     const st = stateRef.current;
     if (!st || pickerSlot === null) return;
     placePeg(st, pickerSlot, color);
-    setPickerSlot(null);
+    // Auto-advance to the next empty slot, if any
+    const next = st.activeGuess.findIndex((c) => c === null);
+    setPickerSlot(next === -1 ? null : next);
     rerender();
   }, [pickerSlot, rerender]);
 
@@ -65,12 +67,16 @@ export default function Mastermind({ onQuit }: GameProps) {
         }
       });
     }
-    if (st.guesses.length > prevGuesses) rerender();
+    if (st.guesses.length > prevGuesses) {
+      // Reset picker to first slot of the fresh active row
+      setPickerSlot(st.status === 'playing' ? 0 : null);
+      rerender();
+    }
   }, [rerender]);
 
   const handleNewGame = useCallback(() => {
     stateRef.current = createState();
-    setPickerSlot(null);
+    setPickerSlot(0);
     rerender();
   }, [rerender]);
 
@@ -127,23 +133,7 @@ export default function Mastermind({ onQuit }: GameProps) {
       </div>
       </div>
 
-      {/* Picker slot — reserved space above active row, always same height */}
-      <div class={s.pickerSlot}>
-        {pickerSlot !== null && (
-          <div class={s.pickerRow}>
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                class={s.pickerSwatch}
-                style={{ background: COLOR_FILL[c] }}
-                onClick={() => handlePickColor(c)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Active guess row (above footer) */}
+      {/* Active guess row */}
       {st.status === 'playing' && (
         <div class={s.activeRow}>
           <div class={s.pegGroup}>
@@ -170,6 +160,21 @@ export default function Mastermind({ onQuit }: GameProps) {
               Guess
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Persistent color picker — below the active row */}
+      {st.status === 'playing' && (
+        <div class={`${s.pickerRow} ${pickerSlot === null ? s.pickerDimmed : ''}`}>
+          {COLORS.map((c) => (
+            <button
+              key={c}
+              class={s.pickerSwatch}
+              style={{ background: COLOR_FILL[c] }}
+              onClick={() => handlePickColor(c)}
+              disabled={pickerSlot === null}
+            />
+          ))}
         </div>
       )}
 
